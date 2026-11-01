@@ -157,6 +157,7 @@ button:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
 .bigstars span.on{color:var(--star);animation:pop .5s both;animation-delay:calc(var(--i)*.2s)}
 .reward{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:800 18px var(--font-body)}
 .sheet{width:min(100%,380px);display:grid;gap:14px}
+.adtxt{margin:0;text-align:center;font:700 16px/1.6 var(--font-body)}.adbox h2{text-align:center}.adscreen{display:grid;place-items:center;height:150px;border-radius:14px;background:var(--deep);color:#fff;font:400 64px var(--font-display)}
 .sheet h2{margin:0;font:400 24px var(--font-display)}
 .swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .sw{display:flex;flex-direction:column;align-items:center;gap:6px;font:700 12px var(--font-body);color:var(--deep)}
@@ -1219,8 +1220,37 @@ function updateCoins(){$('#coins').textContent=save.coins;var qc=$('#qcoins');if
 var tt;
 function toast(m){var t=$('#toast');t.firstElementChild.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},1900)}
 function spend(n){
-  if(save.coins<n){toast('ليس لديك عملات كافية');return false}
+  if(save.coins<n){openAdOffer(n);return false}
   save.coins-=n;persist();updateCoins();return true;
+}
+var adTok=0,adTimer=null;
+function openAdOffer(n){
+  var reward=10;
+  adTok++;clearInterval(adTimer);
+  $('#sheet').style.zIndex=40;
+  $('#sheet').innerHTML='<div class="card sheet adbox" role="dialog" aria-label="عملات">'
+   +'<h2>ليس لديك عملات كافية</h2>'
+   +'<p class="adtxt">شاهد إعلانا قصيرا واحصل على '+reward+' عملات</p>'
+   +'<button class="btn" data-act="watchad">شاهد إعلانا مقابل '+reward+' عملات</button>'
+   +'<button class="btn plain" data-act="closead">إلغاء</button></div>';
+  $('#sheet').hidden=false;
+}
+function watchAd(){
+  /* placeholder ad: replace with a real rewarded ad (AdMob) when the app is published */
+  var tok=++adTok,left=5;
+  $('#sheet').innerHTML='<div class="card sheet adbox" role="dialog" aria-label="إعلان">'
+   +'<h2>إعلان تجريبي</h2><div class="adscreen"><span id="adleft">'+left+'</span></div>'
+   +'<p class="adtxt">سيتم إضافة العملات بعد انتهاء الإعلان</p></div>';
+  clearInterval(adTimer);
+  adTimer=setInterval(function(){
+    if(tok!==adTok||$('#sheet').hidden){clearInterval(adTimer);return}
+    left--;var el=$('#adleft');if(el)el.textContent=left;
+    if(left<=0){
+      clearInterval(adTimer);
+      save.coins+=10;persist();updateCoins();sfx('ok');
+      $('#sheet').hidden=true;toast('تمت إضافة 10 عملات');
+    }
+  },1000);
 }
 function buzz(){try{if(navigator.vibrate)navigator.vibrate(30)}catch(e){}}
 
@@ -1701,7 +1731,7 @@ function openSettings(){
     h+='<button class="sw'+(i===save.skin?' on':'')+'" data-act="setskin" data-v="'+i+'" aria-label="'+s.n+'"><i style="background:linear-gradient(135deg,'+s.g1+','+s.g2+')"></i>'+s.n+'</button>';
   });
   h+='</div></div><button class="btn" data-act="close">تم</button></div>';
-  $('#sheet').innerHTML=h;$('#sheet').hidden=false;
+  $('#sheet').style.zIndex='';$('#sheet').innerHTML=h;$('#sheet').hidden=false;
 }
 
 document.addEventListener('click',function(e){
@@ -1718,6 +1748,8 @@ document.addEventListener('click',function(e){
     case 'togglesound':save.sound=!save.sound;persist();sfx('tap');openSettings();break;
     case 'setskin':applySkin(+v);openSettings();break;
     case 'close':$('#sheet').hidden=true;break;
+    case 'closead':$('#sheet').hidden=true;adTok++;break;
+    case 'watchad':watchAd();break;
     case 'pick':pickP(+v);break;
     case 'slot':slotP(+v);break;
     case 'reveal':revealP();break;
