@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e9a93"><style>html,body{margin:0;padding:0}body{min-height:100vh}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>حروفي</title>
+<title>حروفي المتقاطعة</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,6 +84,7 @@ button:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
 .start .logo{margin-top:0}
 .start .logo span{width:min(70px,calc((100vw - 72px)/5));font-size:clamp(36px,12vw,56px)}
 .start .tag{font-size:18px}
+.start .sub{align-self:stretch;margin:2px 0 0;padding:6px 10px 8px;text-align:center;border-radius:14px;background:var(--tile);color:var(--deep);font:400 clamp(36px,12vw,56px)/1.15 var(--font-display);box-shadow:0 6px 0 var(--tile-edge);transform:rotate(1.5deg)}
 .startbtns{display:flex;flex-direction:column;gap:14px;padding-bottom:12px}
 .btn.ghost{background:var(--veil);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.18);min-height:54px;font-size:18px}
 .gear{width:40px;padding:0;justify-content:center}
@@ -988,7 +989,7 @@ var LEVELS=[
    {a:"بلوكتشين",r:0,c:3,d:'d',clue:"سلسلة كتل مشفرة وراء العملات الرقمية"},
    {a:"الاكروبول",r:3,c:0,d:'a',clue:"قلعة اثينا القديمة العالية"},
    {a:"لينين",r:1,c:3,d:'a',clue:"قائد الثورة البلشفية"},
-   {a:"يشري",r:5,c:2,d:'a',clue:"اكمل المثل المغربي: اللي ما عندو كبير ... ليه كبير"},
+   {a:"يشري",r:5,c:2,d:'a',clue:"اكمل: التاجر يبيع والزبون ..."},
    {a:"سبارتا",r:1,c:0,d:'d',clue:"دولة يونانية محاربة قديمة"},
    {a:"كينشاسا",r:7,c:1,d:'a',clue:"مدينة احتضنت نزال الغابة عام 1974"},
    {a:"اوتو",r:7,c:7,d:'d',clue:"نيكولاوس ... مخترع المحرك رباعي الاشواط"},
@@ -1217,7 +1218,7 @@ function updateCoins(){$('#coins').textContent=save.coins;var qc=$('#qcoins');if
 var tt;
 function toast(m){var t=$('#toast');t.firstElementChild.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},1900)}
 function spend(n){
-  if(save.coins<n){toast('ما عندكش عملات كافية');return false}
+  if(save.coins<n){toast('ليس لديك عملات كافية');return false}
   save.coins-=n;persist();updateCoins();return true;
 }
 function buzz(){try{if(navigator.vibrate)navigator.vibrate(30)}catch(e){}}
@@ -1297,7 +1298,8 @@ function showStart(){
   setHeader('start','');
   $('#screen').innerHTML='<section class="start">'
    +'<div class="brand">'
-   +'<div class="logo" aria-label="حروفي">'+'حروفي'.split('').map(function(ch){return '<span>'+ch+'</span>'}).join('')+'</div>'
+   +'<div class="logo" aria-label="حروفي المتقاطعة">'+'حروفي'.split('').map(function(ch){return '<span>'+ch+'</span>'}).join('')+'</div>'
+   +'<div class="sub" aria-hidden="true">المتقاطعة</div>'
    +'<p class="tag">ألغاز علمية وثقافية في شبكات متقاطعة</p>'
    +'</div>'
    +'<div class="startbtns">'
@@ -1346,7 +1348,7 @@ function finish(){
   if(st.done)return;st.done=true;
   var pen=st.hints+st.mistakes,stars=st.k==='c'?starsNow():(pen===0?3:pen<=2?2:1);
   var old=save.stars[cur];
-  var reward=old===0?10+5*stars:5*Math.max(0,stars-old);
+  var reward=old===0?10:0;
   save.stars[cur]=Math.max(old,stars);delete save.prog[cur];
   save.coins+=reward;
   save.unlocked=Math.max(save.unlocked,Math.min(LEVELS.length,cur+2));
@@ -1358,8 +1360,8 @@ function finish(){
    +'<h2>'+(stars===3?'ممتاز!':stars===2?'أحسنت!':'برافو!')+'</h2>'
    +line
    +'<div class="bigstars">'+[1,2,3].map(function(k){return '<span class="'+(k<=stars?'on':'')+'" style="--i:'+k+'">★</span>'}).join('')+'</div>'
-   +(reward>0?'<p class="reward"><span class="dot"></span>+'+reward+' عملة</p>':'<p class="reward">جرّب بلا مساعدة باش تاخد نجوم أكثر</p>')
-   +(last?'<p>سالات كل المستويات. نزيدو مستويات جديدة قريب.</p>':'')
+   +(reward>0?'<p class="reward"><span class="dot"></span>+'+reward+' عملة</p>':'<p class="reward">حاول دون مساعدة لتحصل على نجوم أكثر</p>')
+   +(last?'<p>انتهت جميع المستويات. ستضاف مستويات جديدة قريبا.</p>':'')
    +'<button class="btn" data-act="'+(last?'home':'next')+'">'+(last?'رجوع إلى المستويات':'المستوى التالي')+'</button>'
    +(last?'':'<button class="btn plain" data-act="home">المستويات</button>')
    +'</div>';
@@ -1462,7 +1464,7 @@ function delP(){
   var P=st;if(P.busy||P.done)return;
   var c=[];
   P.pool.forEach(function(t,i){if(t.extra&&!t.gone&&!t.lock&&P.slots.indexOf(i)<0)c.push(i)});
-  if(!c.length){toast('ما بقى حتى حرف زايد');return}
+  if(!c.length){toast('لا يوجد حرف زائد');return}
   if(!spend(5))return;
   P.pool[c[Math.floor(Math.random()*c.length)]].gone=true;
   P.hints++;renderP();
@@ -1682,7 +1684,7 @@ function delQ(){
   if(!q||q.busy)return;
   var c=[];
   q.pool.forEach(function(t,i){if(t.extra&&!t.gone&&q.slots.indexOf(i)<0)c.push(i)});
-  if(!c.length){toast('ما بقى حتى حرف زايد');return}
+  if(!c.length){toast('لا يوجد حرف زائد');return}
   if(!spend(5))return;
   q.pool[c[Math.floor(Math.random()*c.length)]].gone=true;
   st.hints++;renderStars();renderQ();
