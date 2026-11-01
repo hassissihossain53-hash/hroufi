@@ -116,6 +116,7 @@ button:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
 .cost{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);border-radius:999px;padding:2px 9px;font-size:13px}
 .cost .dot{width:11px;height:11px}
 
+.replaybar{display:flex;align-items:center;justify-content:center;gap:12px;font:800 16px var(--font-body)}.replaybar .btn{min-height:40px;font-size:15px;padding:0 16px}
 .gridwrap{display:flex;justify-content:center;padding-top:18px}
 .cw{touch-action:none;display:grid;direction:rtl;gap:3px;--cell:min(42px,calc((min(100vw,480px) - 32px - 3px*(var(--cols) - 1))/var(--cols)));grid-template-columns:repeat(var(--cols),var(--cell));grid-auto-rows:var(--cell)}
 .cell{border-radius:7px;background:#f4f6f7;color:#fff;font:700 clamp(19px,5.4vw,24px)/1 var(--font-body);display:grid;place-items:center;transition:background .2s}
@@ -1492,20 +1493,27 @@ function starsNow(){
 function renderStars(){
   saveProg();
   var el=$('#liveStars');if(!el||!st||st.k!=='c')return;
-  var s=starsNow();
+  var s=st.solvedView?save.stars[cur]:starsNow();
   el.innerHTML=[1,2,3].map(function(i){return '<span class="'+(i<=s?'':'off')+'">★</span>'}).join('');
 }
 
-var q=null,lastOpen=0;
+var q=null,lastOpen=0,forceFresh=false;
 
 function startCW(L){
   st=buildCW(L);q=null;
   try{var P=save.prog[cur];
     if(P&&P.v){Object.keys(P.v).forEach(function(k){if(st.cells[k]&&st.cells[k].ans===P.v[k])st.cells[k].val=P.v[k]});st.hints=P.h|0;st.mistakes=P.m|0}
   }catch(e){}
+  var hasProg=!!(save.prog[cur]&&save.prog[cur].v&&Object.keys(save.prog[cur].v).length);
+  if(save.stars[cur]>0&&!hasProg&&!forceFresh){
+    Object.keys(st.cells).forEach(function(k){st.cells[k].val=st.cells[k].ans});
+    st.done=true;st.solvedView=true;
+  }
+  forceFresh=false;
   $('#qscreen').hidden=true;
   $('#screen').innerHTML='<section class="game">'
    +'<div class="liveStars" id="liveStars" aria-label="النجوم"></div>'
+   +(st.solvedView?'<div class="replaybar"><span>مستوى مكتمل</span><button class="btn plain" data-act="replay">إعادة اللعب</button></div>':'')
    +'<div class="gridwrap"><div class="cw" id="cw" style="--cols:'+L.cols+'"></div></div>'
    +'</section>';
   renderCW();renderStars();
@@ -1700,6 +1708,7 @@ document.addEventListener('click',function(e){
     case 'start':showStart();break;
     case 'home':showHome();break;
     case 'level':startLevel(+v);break;
+    case 'replay':forceFresh=true;startLevel(cur);break;
     case 'next':startLevel(cur+1);break;
     case 'settings':openSettings();break;
     case 'togglesound':save.sound=!save.sound;persist();sfx('tap');openSettings();break;
