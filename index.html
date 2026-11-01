@@ -1187,7 +1187,7 @@ var SKINS=[
 function $(s){return document.querySelector(s)}
 
 /* ---------- save ---------- */
-var save={coins:100,stars:LEVELS.map(function(){return 0}),unlocked:1,skin:0,sound:true,ver:3,prog:{}};
+var save={coins:50,stars:LEVELS.map(function(){return 0}),unlocked:1,skin:0,sound:true,ver:3,prog:{}};
 try{
   var raw=JSON.parse(localStorage.getItem('hroufi.v1')||'null');
   if(raw&&typeof raw==='object'){
@@ -1199,6 +1199,7 @@ try{
     if(raw.prog&&typeof raw.prog==='object')save.prog=raw.prog;
     /* v2: the odd-numbered levels became crosswords, so their old stars no longer apply */
     if(raw.ver!==3)save.stars=LEVELS.map(function(){return 0});
+    for(var u=0;u<save.stars.length;u++){if(save.stars[u]>0)save.unlocked=Math.max(save.unlocked,Math.min(LEVELS.length,u+2))}
   }
 }catch(e){}
 function saveProg(){
@@ -1320,7 +1321,7 @@ function showHome(){
   var h='<section class="home">'
    +'<div class="card levels"><h2>المستويات</h2><div class="lvgrid">';
   LEVELS.forEach(function(L,i){
-    var locked=false,s=save.stars[i];
+    var locked=i>=save.unlocked,s=save.stars[i];
     h+='<button class="lv'+(i===n?' now':'')+'" data-act="level" data-v="'+i+'"'+(locked?' disabled':'')+' aria-label="'+lvName(i)+'">'
      +'<span class="lvn">'+lvName(i)+'</span>'
      +(locked?'<span class="lock">'+LOCK+'</span>':'<span class="st">'+[1,2,3].map(function(k){return k<=s?'<i>★</i>':'<i class="off">★</i>'}).join('')+'</span>')
@@ -1336,6 +1337,7 @@ function showHome(){
 /* ---------- common ---------- */
 function startLevel(i){
   if(i<0||i>=LEVELS.length)return;
+  if(i>=save.unlocked){toast('أكمل المستوى السابق أولا');return}
   cur=i;
   $('#win').hidden=true;
   closeQ();
@@ -1385,7 +1387,7 @@ function startPhrase(L){
    +'<div class="pool" id="pool"></div>'
    +'<div class="hints">'
    +'<button class="hint" data-act="reveal">اكشف حرف <span class="cost"><span class="dot"></span>10</span></button>'
-   +'<button class="hint" data-act="del">احذف حرف <span class="cost"><span class="dot"></span>5</span></button>'
+   +'<button class="hint" data-act="del">احذف حرف</button>'
    +'<button class="hint" data-act="clear">امسح</button>'
    +'</div></section>';
   renderP();
@@ -1465,7 +1467,7 @@ function delP(){
   var c=[];
   P.pool.forEach(function(t,i){if(t.extra&&!t.gone&&!t.lock&&P.slots.indexOf(i)<0)c.push(i)});
   if(!c.length){toast('لا يوجد حرف زائد');return}
-  if(!spend(5))return;
+  
   P.pool[c[Math.floor(Math.random()*c.length)]].gone=true;
   P.hints++;renderP();
 }
@@ -1594,7 +1596,7 @@ function openQ(wi){
    +'<div class="qhead">'+(w.d==='a'?'أفقي':'عمودي')+' · '+n+' حروف</div>'
    +'<div class="qtext">'+(w.l&&LOGOS[w.l]?'<div class="qflagcap">اي ماركة سيارات هذا الشعار؟</div><img class="qlogo" alt="شعار سيارة" src="'+LOGOS[w.l]+'">':w.f&&FLAGS[w.f]?'<div class="qflagcap">علم أي دولة هذا؟</div><img class="qflag" alt="علم دولة" src="'+FLAGS[w.f]+'">':w.clue)+'</div>'
    +'<div class="qtools">'
-   +'<button class="qtool" data-act="qdel">'+ERASER+'<span>احذف حرف</span><span class="cost"><span class="dot"></span>5</span></button>'
+   +'<button class="qtool" data-act="qdel">'+ERASER+'<span>احذف حرف</span></button>'
    +'<button class="qtool" data-act="qreveal">'+PENCIL+'<span>اكشف حرف</span><span class="cost"><span class="dot"></span>10</span></button>'
    +'</div></div>'
    +'<div class="slots" id="qslots" style="--n:'+n+'"></div>'
@@ -1685,7 +1687,7 @@ function delQ(){
   var c=[];
   q.pool.forEach(function(t,i){if(t.extra&&!t.gone&&q.slots.indexOf(i)<0)c.push(i)});
   if(!c.length){toast('لا يوجد حرف زائد');return}
-  if(!spend(5))return;
+  
   q.pool[c[Math.floor(Math.random()*c.length)]].gone=true;
   st.hints++;renderStars();renderQ();
 }
