@@ -23,14 +23,14 @@ jobs:
           curl -fL $B/tajawal/Tajawal-Medium.ttf -o www/fonts/t5.ttf
           curl -fL $B/tajawal/Tajawal-Bold.ttf -o www/fonts/t7.ttf
           curl -fL $B/tajawal/Tajawal-ExtraBold.ttf -o www/fonts/t8.ttf
-          curl -fL $B/lalezar/Lalezar-Regular.ttf -o www/fonts/lz.ttf
+          curl -fL "$B/cairo/Cairo%5Bslnt%2Cwght%5D.ttf" -o www/fonts/cairo.ttf || rm -f www/fonts/cairo.ttf
           cat > www/fonts/fonts.css <<'CSS'
           @font-face{font-family:"Tajawal";font-weight:400;src:url(t4.ttf) format("truetype");font-display:block}
           @font-face{font-family:"Tajawal";font-weight:500;src:url(t5.ttf) format("truetype");font-display:block}
           @font-face{font-family:"Tajawal";font-weight:700;src:url(t7.ttf) format("truetype");font-display:block}
           @font-face{font-family:"Tajawal";font-weight:800;src:url(t8.ttf) format("truetype");font-display:block}
-          @font-face{font-family:"Lalezar";font-weight:400;src:url(lz.ttf) format("truetype");font-display:block}
           CSS
+          if [ -f www/fonts/cairo.ttf ]; then echo '@font-face{font-family:"Cairo";font-weight:200 1000;src:url(cairo.ttf) format("truetype");font-display:block}' >> www/fonts/fonts.css; fi
       - run: cp index.html www/index.html
       - run: |
           sed -i 's#<link href="https://fonts.googleapis.com[^>]*>#<link rel="stylesheet" href="fonts/fonts.css">#' www/index.html
